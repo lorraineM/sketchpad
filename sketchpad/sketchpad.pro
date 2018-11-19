@@ -27,11 +27,11 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    paintwidget.cpp
+        paintwidget.cpp
 
 HEADERS += \
         mainwindow.h \
-    paintwidget.h
+        paintwidget.h
 
 FORMS += \
         mainwindow.ui
@@ -51,3 +51,6 @@ DISTFILES += \
     images/rectangle.png \
     images/save.png \
     images/text.png
+
+RESOURCES += \
+    resources.qrc

@@ -7,7 +7,7 @@ PaintWidget::PaintWidget(QWidget *parent) :
     setAutoFillBackground (true);
     setPalette (QPalette(Qt::white));
 
-    canvas = QImage(600, 400, QImage::Format_RGB32);
+    canvas = QImage(1000, 1000, QImage::Format_RGB32);
     backgroundColor = qRgb(255, 255, 255);
     canvas.fill(backgroundColor);
 
@@ -15,7 +15,7 @@ PaintWidget::PaintWidget(QWidget *parent) :
     modified = false;
     penColor = Qt::black;
     fillColor = Qt::black;
-    penWidth = 5;
+    penWidth = 3;
     penStyle = Qt::SolidLine;
     shape = None;
 }
@@ -35,8 +35,13 @@ void PaintWidget::mousePressEvent(QMouseEvent *e)
     if (e->button() == Qt::LeftButton) {
         startPoint = e->pos();
         drawing = true;
+
+        if (shape == None || shape == erase) {
+            tmp = new QList<QPoint>();
+            tmp->append(startPoint);
+        }
     }
-    //std::cout << startPoint.x() << std::endl;
+
 }
 
 void PaintWidget::mouseMoveEvent(QMouseEvent *e)
@@ -45,6 +50,7 @@ void PaintWidget::mouseMoveEvent(QMouseEvent *e)
         endPoint = e->pos();
         if (shape == None || shape == erase) {
             drawing = false;
+            tmp->append(endPoint);
             paint(canvas);
         }else {
             tmpcanvas = canvas;
@@ -57,6 +63,16 @@ void PaintWidget::mouseReleaseEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
         endPoint = e->pos();
+
+        if (shape == None || shape == erase) {
+            tmp->append(e->pos());
+            Shape* shp = new Shape(*tmp, shape);
+            stack.push(shp);
+        }else {
+            Shape* shp = new Shape(startPoint, endPoint, shape);
+            stack.push(shp);
+        }
+
         drawing = false;
         paint(canvas);
     }
@@ -134,4 +150,76 @@ void PaintWidget::setFillColor(QRgb color)
 void PaintWidget::setShape(ShapeType s)
 {
     shape = s;
+}
+
+void PaintWidget::undo() {
+    if (stack.isEmpty()) {
+        return;
+    }
+
+    canvas = QImage(1000, 1000, QImage::Format_RGB32);
+    backgroundColor = qRgb(255, 255, 255);
+    canvas.fill(backgroundColor);
+
+    redoStack.push(stack.pop());
+    drawing = false;
+    foreach(Shape* s, stack) {
+        shape = s->getShape();
+        if (shape == None || shape == erase) {
+            QList<QPoint> freeLine = s->getLine();
+            startPoint = freeLine[0];
+            for (int i = 1; i < freeLine.size(); i++) {
+                endPoint = freeLine[i];
+                paint(canvas);
+            }
+        }else {
+            startPoint = s->getStart();
+            endPoint = s->getEnd();
+            paint(canvas);
+        }
+    }
+    update();
+}
+
+void PaintWidget::redo() {
+    if (redoStack.isEmpty()) {
+        return;
+    }
+    Shape *s = redoStack.top();
+    stack.push(redoStack.pop());
+
+    shape = s->getShape();
+    drawing = false;
+    if (shape == None || shape == erase) {
+        QList<QPoint> freeLine = s->getLine();
+        startPoint = freeLine[0];
+        for (int i = 1; i < freeLine.size(); i++) {
+            endPoint = freeLine[i];
+            paint(canvas);
+        }
+    }else {
+        startPoint = s->getStart();
+        endPoint = s->getEnd();
+        paint(canvas);
+    }
+}
+
+void PaintWidget::clear() {
+    while (!stack.isEmpty()) {
+        redoStack.push(stack.pop());
+    }
+
+    canvas = QImage(1000, 1000, QImage::Format_RGB32);
+    backgroundColor = qRgb(255, 255, 255);
+    canvas.fill(backgroundColor);
+    update();
+}
+
+void PaintWidget::save(const QString&fileName,const char*fileFormat) {
+    canvas.save(fileName, fileFormat);
+}
+
+void PaintWidget::open(const QString&fileName) {
+    canvas.load(fileName);
+    update();
 }

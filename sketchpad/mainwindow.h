@@ -6,6 +6,8 @@
 #include <QMenuBar>
 #include <QToolBar>
 #include <QAction>
+#include <QFileDialog>
+#include <QtDebug>
 #include "paintwidget.h"
 
 class MainWindow;
@@ -26,8 +28,16 @@ public:
     void undo();
     void clear();
 
+public slots:
+     void shapeNoneClicked();
+     void shapeLineClicked();
+     void shapeRectClicked();
+     void shapeCircleClicked();
+     void shapeEraserClicked();
+
 private:
     PaintWidget *canvasArea;
+    QString *fName;
 
 private:
     QMenuBar *mainMenuBar;

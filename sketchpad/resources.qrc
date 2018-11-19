@@ -1,0 +1,14 @@
+<!DOCTYPE RCC><RCC version = "1.0">
+<qresource>
+    <file>images/colorpuck.png</file>
+    <file>images/eraser.png</file>
+    <file>images/floodFill.png</file>
+    <file>images/line.png</file>
+    <file>images/None.png</file>
+    <file>images/open.png</file>
+    <file>images/rectangle.png</file>
+    <file>images/save.png</file>
+    <file>images/text.png</file>
+    <file>images/circle.png</file>
+</qresource>
+</RCC>
