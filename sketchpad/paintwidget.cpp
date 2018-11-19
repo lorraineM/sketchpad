@@ -7,17 +7,7 @@ PaintWidget::PaintWidget(QWidget *parent) :
     setAutoFillBackground (true);
     setPalette (QPalette(Qt::white));
 
-    canvas = QImage(1000, 1000, QImage::Format_RGB32);
-    backgroundColor = qRgb(255, 255, 255);
-    canvas.fill(backgroundColor);
-
-    drawing = false;
-    modified = false;
-    penColor = Qt::black;
-    fillColor = Qt::black;
-    penWidth = 3;
-    penStyle = Qt::SolidLine;
-    shape = None;
+    newCanvas();
 }
 
 void PaintWidget::paintEvent(QPaintEvent*)
@@ -212,6 +202,25 @@ void PaintWidget::clear() {
     canvas = QImage(1000, 1000, QImage::Format_RGB32);
     backgroundColor = qRgb(255, 255, 255);
     canvas.fill(backgroundColor);
+    update();
+}
+
+void PaintWidget::newCanvas() {
+    canvas = QImage(1000, 1000, QImage::Format_RGB32);
+    backgroundColor = qRgb(255, 255, 255);
+    canvas.fill(backgroundColor);
+
+    drawing = false;
+    modified = false;
+    penColor = Qt::black;
+    fillColor = Qt::black;
+    penWidth = 3;
+    penStyle = Qt::SolidLine;
+    shape = None;
+
+    stack.clear();
+    redoStack.clear();
+
     update();
 }
 

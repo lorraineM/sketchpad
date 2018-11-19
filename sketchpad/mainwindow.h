@@ -38,6 +38,7 @@ public slots:
 private:
     PaintWidget *canvasArea;
     QString *fName;
+    bool newCreated;
 
 private:
     QMenuBar *mainMenuBar;

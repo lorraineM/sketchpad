@@ -10,5 +10,6 @@
     <file>images/save.png</file>
     <file>images/text.png</file>
     <file>images/circle.png</file>
+    <file>images/palette.png</file>
 </qresource>
 </RCC>

@@ -69,6 +69,7 @@ public:
 
     void save(const QString&fileName,const char*fileFormat);
     void open(const QString&fileName);
+    void newCanvas();
 
 protected:
     void paintEvent(QPaintEvent*);

@@ -5,6 +5,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setWindowTitle(tr("Palette"));
     setMinimumSize(650, 500);
+    setWindowIcon(QIcon(":/images/palette.png"));
 
     // menu
     mainMenuBar = menuBar();
@@ -15,33 +16,37 @@ MainWindow::MainWindow(QWidget *parent) :
     mainMenuBar->addMenu(editMenu);
     mainMenuBar->addMenu(helpMenu);
 
+    // actions
     newCanvasAction = new QAction(tr("&New File"), this);
     openCanvasAction = new QAction(tr("&Open File"), this);
     saveCanvasAction = new QAction(tr("&Save File"), this);
     saveCanvasAsAction = new QAction(tr("&Save File As"), this);
+    connect(newCanvasAction, &QAction::triggered, this, &MainWindow::newFile);
+    connect(saveCanvasAction, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(openCanvasAction, &QAction::triggered, this, &MainWindow::openFile);
+    connect(saveCanvasAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
+
     fileActions.append(newCanvasAction);
     fileActions.append(openCanvasAction);
     fileActions.append(saveCanvasAction);
     fileActions.append(saveCanvasAsAction);
-
-    connect(saveCanvasAction, &QAction::triggered, this, &MainWindow::saveFile);
-    connect(openCanvasAction, &QAction::triggered, this, &MainWindow::openFile);
-    connect(saveCanvasAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
     fileMenu->addActions(fileActions);
 
 
+    // actions
     redoAction = new QAction(tr("&Redo"), this);
     undoAction = new QAction(tr("&Undo"), this);
     clearAction = new QAction(tr("&clear"), this);
-    editActions.append(redoAction);
-    editActions.append(undoAction);
-    editActions.append(clearAction);
-
     connect(redoAction, &QAction::triggered, this, &MainWindow::redo);
     connect(undoAction, &QAction::triggered, this, &MainWindow::undo);
     connect(clearAction, &QAction::triggered, this, &MainWindow::clear);
+
+    editActions.append(redoAction);
+    editActions.append(undoAction);
+    editActions.append(clearAction);
     editMenu->addActions(editActions);
 
+    // top bar
     topToolBar = new QToolBar(this);
     topToolBar->setMovable(false);
     topToolBar->setHidden(false);
@@ -53,25 +58,25 @@ MainWindow::MainWindow(QWidget *parent) :
     topToolBar->addAction(redoAction);
     topToolBar->addAction(undoAction);
     topToolBar->addAction(clearAction);
-
     addToolBar(Qt::TopToolBarArea, topToolBar);
 
+    // actions
     QAction *shapeNone = new QAction(QIcon(":/images/None.png"),tr("&pen"), this);
     QAction *shapeLine = new QAction(QIcon(":/images/line.png"),tr("&line"), this);
     QAction *shapeCircle = new QAction(QIcon(":/images/circle.png"),tr("&circle"), this);
     QAction *shapeRect = new QAction(QIcon(":/images/rectangle.png"), tr("rect"), this);
     QAction *shapeEraser = new QAction(QIcon(":/images/eraser.png"), tr("&eraser"), this);
-    shapeActions.append(shapeNone);
-    shapeActions.append(shapeLine);
-    shapeActions.append(shapeCircle);
-    shapeActions.append(shapeRect);
-    shapeActions.append(shapeEraser);
-
     connect(shapeNone, &QAction::triggered, this, &MainWindow::shapeNoneClicked);
     connect(shapeLine, &QAction::triggered, this, &MainWindow::shapeLineClicked);
     connect(shapeCircle, &QAction::triggered, this, &MainWindow::shapeCircleClicked);
     connect(shapeRect, &QAction::triggered, this, &MainWindow::shapeRectClicked);
     connect(shapeEraser, &QAction::triggered, this, &MainWindow::shapeEraserClicked);
+
+    shapeActions.append(shapeNone);
+    shapeActions.append(shapeLine);
+    shapeActions.append(shapeCircle);
+    shapeActions.append(shapeRect);
+    shapeActions.append(shapeEraser);
 
     sideToolBar = new QToolBar(this);
     sideToolBar->setHidden(false);
@@ -83,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     canvasArea = new PaintWidget(this);
     setCentralWidget(canvasArea);
 
+    newCreated = true;
     fName = new QString("/Users/maxinyu/Desktop/default.png");
 }
 
@@ -118,16 +124,30 @@ void MainWindow::clear() {
     canvasArea->clear();
 }
 
+void MainWindow::newFile() {
+    newCreated = true;
+    fName->clear();
+    canvasArea->newCanvas();
+}
+
 void MainWindow::saveFile() {
-    canvasArea->save(*fName, nullptr);
+    if (newCreated) {
+        saveFileAs();
+    }else {
+        canvasArea->save(*fName, nullptr);
+    }
 }
 
 void MainWindow::saveFileAs() {
+    newCreated = false;
+
     QFileDialog d(this);
     d.setAcceptMode(QFileDialog::AcceptSave);
     d.setDefaultSuffix(".png");
-    const QString fileName = d.getSaveFileName(this, tr("save canvas"), "", tr(".png"));
+    const QString fileName = d.getSaveFileName(this, tr("save canvas"), "/Users/maxinyu/Desktop", tr(".png"));
+
     fName = new QString(fileName);
+
     if (!fileName.isEmpty()) {
         canvasArea->save(fileName, nullptr);
     }
@@ -136,10 +156,10 @@ void MainWindow::saveFileAs() {
 void MainWindow::openFile() {
     QFileDialog d(this);
     d.setAcceptMode(QFileDialog::AcceptOpen);
+    const QString fileName = d.getOpenFileName(this, tr("open canvas"), "/Users/maxinyu/Desktop");
 
-    const QString fileName = d.getOpenFileName(this, tr("open canvas"), "", "");
-    qInfo() << fileName;
     fName = new QString(fileName);
+
     if (!fileName.isEmpty()) {
         canvasArea->open(fileName);
     }
